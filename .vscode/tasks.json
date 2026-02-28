@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run SjTechniek",
+			"type": "shell",
+			"command": "dotnet run --urls http://localhost:5050",
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}

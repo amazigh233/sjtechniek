@@ -1,0 +1,112 @@
+﻿<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="SJ Techniek – uw specialist in CV ketel installatie, onderhoud en reparatie. Snel, betrouwbaar en professioneel." />
+    <base href="/" />
+    <ResourcePreloader />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["SjTechniek.styles.css"]" />
+    <ImportMap />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <HeadOutlet />
+</head>
+
+<body>
+    <Routes />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script>
+        (function () {
+            function initScrollAnimations() {
+                var elements = document.querySelectorAll('.animate-on-scroll');
+                if (!elements.length) return;
+
+                if ('IntersectionObserver' in window) {
+                    var observer = new IntersectionObserver(function (entries) {
+                        entries.forEach(function (entry) {
+                            if (entry.isIntersecting) {
+                                entry.target.classList.add('animate-in');
+                            }
+                        });
+                    }, { threshold: 0.08 });
+                    elements.forEach(function (el) { observer.observe(el); });
+                }
+            }
+
+            function initNavbar() {
+                var navbar = document.querySelector('.navbar-custom');
+                if (!navbar) return;
+                window.addEventListener('scroll', function () {
+                    if (window.scrollY > 50) navbar.classList.add('scrolled');
+                    else navbar.classList.remove('scrolled');
+                }, { passive: true });
+            }
+
+            function initCounters() {
+                var statsSection = document.querySelector('.stats-section');
+                if (!statsSection) return;
+                var fired = false;
+                var statsObs = new IntersectionObserver(function (entries) {
+                    if (entries[0].isIntersecting && !fired) {
+                        fired = true;
+                        document.querySelectorAll('.counter').forEach(function (counter) {
+                            var target = parseInt(counter.getAttribute('data-target'));
+                            var suffix = counter.getAttribute('data-suffix') || '';
+                            var duration = 2000, step = target / (duration / 16), current = 0;
+                            var timer = setInterval(function () {
+                                current += step;
+                                if (current >= target) { current = target; clearInterval(timer); }
+                                counter.textContent = Math.floor(current) + suffix;
+                            }, 16);
+                        });
+                    }
+                }, { threshold: 0.3 });
+                statsObs.observe(statsSection);
+            }
+
+            function init() {
+                initScrollAnimations();
+                initNavbar();
+                initCounters();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+            // Re-init on Blazor enhanced navigation
+            document.addEventListener('blazor:navigated', init);
+        })();
+
+        function toggleMobileNav() {
+            var links = document.getElementById('navLinks');
+            var toggle = document.querySelector('.nav-toggle');
+            if (links) links.classList.toggle('open');
+            if (toggle) toggle.classList.toggle('active');
+        }
+        function closeMobileNav() {
+            var links = document.getElementById('navLinks');
+            var toggle = document.querySelector('.nav-toggle');
+            if (links) links.classList.remove('open');
+            if (toggle) toggle.classList.remove('active');
+        }
+        document.addEventListener('click', function (e) {
+            var a = e.target.closest('a[href^="#"]');
+            if (a) {
+                e.preventDefault();
+                var target = document.querySelector(a.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    </script>
+</body>
+
+</html>

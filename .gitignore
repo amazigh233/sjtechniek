@@ -1,0 +1,41 @@
+## .NET gitignore
+
+# Build results
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio
+.vs/
+*.rsuser
+
+# Rider
+.idea/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Publish output
+**/publish/
+**/PublishProfiles/
+
+# NuGet
+*.nupkg
+*.snupkg
+**/packages/
+!**/packages/build/
+*.nuspec
+
+# dotnet CLI
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# OS
+.DS_Store
+Thumbs.db
