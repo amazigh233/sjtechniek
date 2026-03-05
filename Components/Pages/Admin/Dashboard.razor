@@ -1,0 +1,203 @@
+@page "/admin"
+@rendermode InteractiveServer
+@layout AdminLayout
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using SjTechniek.Services
+@attribute [Authorize]
+@inject VisitorTrackingService Tracker
+@inject AuthenticationStateProvider AuthState
+@inject NavigationManager Nav
+@implements IDisposable
+
+<PageTitle>Dashboard – SJ Techniek Admin</PageTitle>
+
+<div class="admin-page">
+    <h1 class="admin-page-title">
+        <i class="fa-solid fa-chart-line"></i> Dashboard
+        <span class="admin-page-subtitle">Realtime – ververst elke 10 seconden</span>
+    </h1>
+
+    <div class="admin-stats-grid">
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon green"><i class="fa-solid fa-circle-dot"></i></div>
+            <div class="admin-stat-info">
+                <div class="admin-stat-number">@activeCount</div>
+                <div class="admin-stat-label">Nu Online</div>
+            </div>
+        </div>
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon blue"><i class="fa-solid fa-users"></i></div>
+            <div class="admin-stat-info">
+                <div class="admin-stat-number">@todayCount</div>
+                <div class="admin-stat-label">Bezoekers vandaag</div>
+            </div>
+        </div>
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon orange"><i class="fa-solid fa-eye"></i></div>
+            <div class="admin-stat-info">
+                <div class="admin-stat-number">@totalViews</div>
+                <div class="admin-stat-label">Totaal paginaweergaven</div>
+            </div>
+        </div>
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon purple"><i class="fa-solid fa-fire-flame-curved"></i></div>
+            <div class="admin-stat-info">
+                <div class="admin-stat-number">@pageStats.Count</div>
+                <div class="admin-stat-label">Unieke pagina's bezocht</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-panels">
+        <div class="admin-panel">
+            <h2><i class="fa-solid fa-signal"></i> Nu Actief (@activeCount bezoekers)</h2>
+            @if (!activeVisitors.Any())
+            {
+                <p class="admin-empty"><i class="fa-solid fa-moon"></i> Geen actieve bezoekers op dit moment.</p>
+            }
+            else
+            {
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Sessie ID</th>
+                                <th>Pagina</th>
+                                <th>IP Adres</th>
+                                <th>Eerste bezoek</th>
+                                <th>Laatste activiteit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var v in activeVisitors)
+                            {
+                                <tr>
+                                    <td><code>@v.SessionId[..8]…</code></td>
+                                    <td><span class="admin-page-badge">@v.Page</span></td>
+                                    <td>@MaskIp(v.IpAddress)</td>
+                                    <td>@v.FirstSeen.ToString("HH:mm:ss")</td>
+                                    <td><span class="admin-time-ago">@FormatAgo(v.LastSeen)</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        <div class="admin-panels-row">
+            <div class="admin-panel">
+                <h2><i class="fa-solid fa-fire-flame-curved"></i> Populairste Pagina's</h2>
+                @if (!pageStats.Any())
+                {
+                    <p class="admin-empty"><i class="fa-solid fa-chart-bar"></i> Nog geen paginaweergaven.</p>
+                }
+                else
+                {
+                    var maxViews = pageStats.FirstOrDefault()?.Views ?? 1;
+                    <div class="admin-table-wrap">
+                        <table class="admin-table">
+                            <thead>
+                                <tr><th>Pagina</th><th>Weergaven</th><th style="width:40%">Populariteit</th></tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var s in pageStats)
+                                {
+                                    <tr>
+                                        <td>@s.Page</td>
+                                        <td><strong>@s.Views</strong></td>
+                                        <td>
+                                            <div class="admin-bar-track">
+                                                <div class="admin-bar" style="width:@((s.Views * 100 / maxViews))%"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+
+            <div class="admin-panel">
+                <h2><i class="fa-solid fa-list"></i> Recente Activiteit</h2>
+                @if (!recentActivity.Any())
+                {
+                    <p class="admin-empty"><i class="fa-solid fa-inbox"></i> Nog geen activiteit.</p>
+                }
+                else
+                {
+                    <div class="admin-table-wrap">
+                        <table class="admin-table">
+                            <thead>
+                                <tr><th>Tijd</th><th>Pagina</th><th>IP</th></tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var a in recentActivity)
+                                {
+                                    <tr>
+                                        <td><span class="admin-time-ago">@a.Time.ToString("HH:mm:ss")</span></td>
+                                        <td><span class="admin-page-badge">@a.Page</span></td>
+                                        <td>@MaskIp(a.Ip)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private int activeCount;
+    private int todayCount;
+    private int totalViews;
+    private IReadOnlyList<VisitorVisit> activeVisitors = Array.Empty<VisitorVisit>();
+    private IReadOnlyList<PageViewStat> pageStats = Array.Empty<PageViewStat>();
+    private IReadOnlyList<(DateTime Time, string Page, string Ip)> recentActivity = Array.Empty<(DateTime, string, string)>();
+    private System.Threading.Timer? _refreshTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthState.GetAuthenticationStateAsync();
+        if (!authState.User.Identity?.IsAuthenticated == true)
+        {
+            Nav.NavigateTo("/admin/login", replace: true);
+            return;
+        }
+        Refresh();
+        _refreshTimer = new System.Threading.Timer(_ =>
+            InvokeAsync(() => { Refresh(); StateHasChanged(); }),
+            null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
+    }
+
+    private void Refresh()
+    {
+        activeVisitors = Tracker.GetActiveVisitors();
+        activeCount = activeVisitors.Count;
+        todayCount = Tracker.GetTodayVisitorCount();
+        pageStats = Tracker.GetPageViewStats();
+        totalViews = pageStats.Sum(s => s.Views);
+        recentActivity = Tracker.GetRecentActivity();
+    }
+
+    private static string MaskIp(string ip)
+    {
+        var parts = ip.Split('.');
+        if (parts.Length == 4) parts[3] = "***";
+        return string.Join('.', parts);
+    }
+
+    private static string FormatAgo(DateTime dt)
+    {
+        var diff = DateTime.Now - dt;
+        if (diff.TotalSeconds < 60) return $"{(int)diff.TotalSeconds}s geleden";
+        if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes}m geleden";
+        return dt.ToString("HH:mm");
+    }
+
+    public void Dispose() => _refreshTimer?.Dispose();
+}

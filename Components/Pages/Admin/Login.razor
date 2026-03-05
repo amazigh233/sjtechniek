@@ -1,0 +1,45 @@
+@page "/admin/login"
+@layout EmptyLayout
+
+<PageTitle>Admin Login – SJ Techniek</PageTitle>
+
+<link rel="stylesheet" href="admin.css" />
+
+<div class="admin-login-page">
+    <div class="admin-login-card">
+        <div class="admin-login-logo">
+            <i class="fa-solid fa-fire-flame-curved"></i>
+            <span>SJ Techniek Admin</span>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Error))
+        {
+            <div class="admin-login-error">
+                <i class="fa-solid fa-circle-exclamation"></i> @Error
+            </div>
+        }
+
+        <form method="post" action="/admin/do-login">
+            <div class="admin-form-group">
+                <label>Gebruikersnaam</label>
+                <input type="text" name="username" autocomplete="username" required placeholder="admin" />
+            </div>
+            <div class="admin-form-group">
+                <label>Wachtwoord</label>
+                <input type="password" name="password" autocomplete="current-password" required placeholder="••••••••" />
+            </div>
+            <button type="submit" class="admin-login-btn">
+                <i class="fa-solid fa-right-to-bracket"></i> Inloggen
+            </button>
+        </form>
+
+        <div class="admin-login-back">
+            <a href="/"><i class="fa-solid fa-arrow-left"></i> Terug naar website</a>
+        </div>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? Error { get; set; }
+}

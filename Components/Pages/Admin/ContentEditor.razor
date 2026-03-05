@@ -1,0 +1,178 @@
+@page "/admin/content"
+@rendermode InteractiveServer
+@layout AdminLayout
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using SjTechniek.Services
+@attribute [Authorize]
+@inject ContentService ContentSvc
+@inject AuthenticationStateProvider AuthState
+@inject NavigationManager Nav
+
+<PageTitle>Inhoud Bewerken – SJ Techniek Admin</PageTitle>
+
+<div class="admin-page">
+    <h1 class="admin-page-title">
+        <i class="fa-solid fa-pen-to-square"></i> Inhoud Bewerken
+        <span class="admin-page-subtitle">Wijzigingen zijn direct zichtbaar op de website</span>
+    </h1>
+
+    @if (savedMessage)
+    {
+        <div class="admin-success">
+            <i class="fa-solid fa-circle-check"></i> Opgeslagen! De wijzigingen zijn live op de website.
+        </div>
+    }
+
+    <div class="admin-content-sections">
+        @foreach (var contentSection in sections)
+        {
+            <div class="admin-content-section">
+                <h2 class="admin-section-title">@contentSection.Title</h2>
+                <div class="admin-fields-grid">
+                    @foreach (var field in contentSection.Fields)
+                    {
+                        <div class="admin-content-field @(field.Multiline ? "field-wide" : "")">
+                            <label>@field.Label</label>
+                            @if (field.Multiline)
+                            {
+                                <textarea @bind="editValues[field.Key]" rows="3" placeholder="@field.Default"></textarea>
+                            }
+                            else
+                            {
+                                <input type="text" @bind="editValues[field.Key]" placeholder="@field.Default" />
+                            }
+                            <div class="admin-field-key">sleutel: <code>@field.Key</code></div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="admin-save-bar">
+        <button class="admin-save-btn" @onclick="SaveAll" disabled="@isSaving">
+            @if (isSaving)
+            {
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <span>Opslaan...</span>
+            }
+            else
+            {
+                <i class="fa-solid fa-floppy-disk"></i>
+                <span>Alle Wijzigingen Opslaan</span>
+            }
+        </button>
+        <a href="/" target="_blank" class="admin-preview-btn">
+            <i class="fa-solid fa-eye"></i> Website Bekijken
+        </a>
+    </div>
+</div>
+
+@code {
+    private Dictionary<string, string> editValues = new();
+    private bool savedMessage = false;
+    private bool isSaving = false;
+
+    private record ContentField(string Key, string Label, string Default, bool Multiline = false);
+    private record ContentSection(string Title, ContentField[] Fields);
+
+    private readonly ContentSection[] sections =
+    [
+        new("🏠 Hero Sectie", [
+            new("hero.badge", "Badge tekst", "Gecertificeerd Installateur"),
+            new("hero.title.line1", "Titel regel 1", "Uw"),
+            new("hero.title.accent", "Titel accent woord", "CV Ketel"),
+            new("hero.title.line2", "Titel regel 2", "Specialist in Amsterdam"),
+            new("hero.subtitle", "Ondertitel", "Van installatie tot spoedreparatie — snel, betrouwbaar en professioneel.\n24/7 bereikbaar voor alle CV ketel problemen.", true),
+            new("hero.trust.reviews", "Trust: Reviews tekst", "4.9/5 – 200+ reviews"),
+            new("hero.trust.speed", "Trust: Snelheid tekst", "Binnen 2 uur ter plaatse"),
+            new("hero.trust.experience", "Trust: Ervaring tekst", "10+ jaar ervaring"),
+        ]),
+        new("📊 Statistieken Balk", [
+            new("stats.installations.value", "Installaties waarde", "500+"),
+            new("stats.installations.label", "Installaties label", "Installaties"),
+            new("stats.experience.value", "Ervaring waarde", "10+"),
+            new("stats.experience.label", "Ervaring label", "Jaar Ervaring"),
+            new("stats.satisfaction.value", "Tevredenheid waarde", "98%"),
+            new("stats.satisfaction.label", "Tevredenheid label", "Klanttevredenheid"),
+        ]),
+        new("ℹ️ Over Ons", [
+            new("about.intro", "Introductietekst", "Bij SJ Techniek staat kwaliteit en klantgerichtheid centraal. Met meer dan 10 jaar ervaring in de CV-installatie branche, helpen wij particulieren en bedrijven in Amsterdam en omgeving.", true),
+            new("about.feature1.title", "Kenmerk 1 – Titel", "Volledig Verzekerd"),
+            new("about.feature1.desc", "Kenmerk 1 – Beschrijving", "Wij werken met alle benodigde certificaten en verzekeringen voor uw gemoedsrust."),
+            new("about.feature2.title", "Kenmerk 2 – Titel", "Eerlijke Prijzen"),
+            new("about.feature2.desc", "Kenmerk 2 – Beschrijving", "Transparante offertes zonder verrassingen. Wat wij afspreken, dat doen wij."),
+            new("about.feature3.title", "Kenmerk 3 – Titel", "Gecertificeerd"),
+            new("about.feature3.desc", "Kenmerk 3 – Beschrijving", "STEK gecertificeerd en erkend door alle grote CV ketel fabrikanten."),
+        ]),
+        new("📞 Contactgegevens", [
+            new("contact.phone", "Telefoonnummer", "+31 6 12 34 56 78"),
+            new("contact.phone.hours", "Bereikbaarheidsuren", "Bereikbaar Ma-Za 08:00-20:00"),
+            new("contact.email", "E-mailadres", "info@sjtechniek.nl"),
+            new("contact.address", "Werkgebied", "Amsterdam & omgeving"),
+            new("contact.address.note", "Reiskosten opmerking", "Gratis reiskosten in Amsterdam"),
+        ]),
+        new("💰 Prijzen", [
+            new("price.maintenance.name", "Onderhoud – Naam", "Basis Onderhoud"),
+            new("price.maintenance.price", "Onderhoud – Prijs", "€79"),
+            new("price.maintenance.period", "Onderhoud – Per", "per beurt"),
+            new("price.contract.name", "Contract – Naam", "Onderhoudscontract"),
+            new("price.contract.price", "Contract – Prijs", "€99"),
+            new("price.contract.period", "Contract – Per", "per jaar"),
+            new("price.installation.name", "Installatie – Naam", "Nieuwe Installatie"),
+            new("price.installation.price", "Installatie – Prijs", "€950"),
+            new("price.installation.period", "Installatie – Per", "all-in"),
+            new("price.emergency", "Spoedtarief", "vanaf €149"),
+            new("price.radiator", "Radiator plaatsen", "vanaf €89"),
+            new("price.thermostat", "Thermostaat installatie", "vanaf €69"),
+            new("price.bleed", "Ontluchten radiatoren", "vanaf €59"),
+            new("price.diagnosis", "Diagnose & inspectie", "€45 (gratis bij reparatie)"),
+        ]),
+        new("⭐ Reviews", [
+            new("review1.text", "Review 1 – Tekst", "SJ Techniek was binnen een uur bij mij thuis na een spoedmelding. Vriendelijk, vakkundig en de prijs was precies zoals afgesproken. Absolute aanrader!", true),
+            new("review1.author", "Review 1 – Naam", "Mohamed V."),
+            new("review1.location", "Review 1 – Locatie", "Amsterdam"),
+            new("review2.text", "Review 2 – Tekst", "Al jaren bij SJ Techniek voor mijn jaarlijks onderhoud. Altijd stipt op tijd, netjes en doen ook nog even dat kleine extra'tje. Geweldig bedrijf!", true),
+            new("review2.author", "Review 2 – Naam", "Anne J."),
+            new("review2.location", "Review 2 – Locatie", "Amsterdam-Noord"),
+            new("review3.text", "Review 3 – Tekst", "Nieuwe CV ketel geplaatst inclusief vloerverwarming in de badkamer. Prachtig werk, alles netjes weggewerkt. De offerteprijs was de eindprijs. Top!", true),
+            new("review3.author", "Review 3 – Naam", "Peter B."),
+            new("review3.location", "Review 3 – Locatie", "Amstelveen"),
+        ]),
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthState.GetAuthenticationStateAsync();
+        if (!authState.User.Identity?.IsAuthenticated == true)
+        {
+            Nav.NavigateTo("/admin/login", replace: true);
+            return;
+        }
+
+        var allContent = ContentSvc.GetAll();
+        foreach (var section in sections)
+        {
+            foreach (var field in section.Fields)
+            {
+                editValues[field.Key] = allContent.TryGetValue(field.Key, out var v) ? v : field.Default;
+            }
+        }
+    }
+
+    private async Task SaveAll()
+    {
+        isSaving = true;
+        foreach (var kv in editValues)
+        {
+            await ContentSvc.SetAsync(kv.Key, kv.Value);
+        }
+        isSaving = false;
+        savedMessage = true;
+        StateHasChanged();
+        await Task.Delay(4000);
+        savedMessage = false;
+        StateHasChanged();
+    }
+}

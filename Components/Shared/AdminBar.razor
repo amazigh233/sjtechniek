@@ -1,0 +1,16 @@
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView>
+    <Authorized>
+        <div class="admin-bar-frontend">
+            <div class="admin-bar-inner">
+                <span><i class="fa-solid fa-lock"></i> Admin modus actief</span>
+                <a href="/admin"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="/admin/content"><i class="fa-solid fa-pen-to-square"></i> Bewerk Inhoud</a>
+                <form action="/admin/logout" method="post" style="display:inline">
+                    <button type="submit"><i class="fa-solid fa-arrow-right-from-bracket"></i> Uitloggen</button>
+                </form>
+            </div>
+        </div>
+    </Authorized>
+</AuthorizeView>

@@ -1,5 +1,6 @@
 ﻿@page "/"
 @rendermode InteractiveServer
+@inject SjTechniek.Services.ContentService ContentSvc
 
 <PageTitle>SJ Techniek – CV Ketel Specialist</PageTitle>
 
@@ -11,13 +12,12 @@
         <div class="shape shape-3"></div>
     </div>
     <div class="hero-content">
-        <div class="hero-badge animate-on-scroll"><i class="fa-solid fa-shield-check"></i> Gecertificeerd Installateur</div>
+        <div class="hero-badge animate-on-scroll"><i class="fa-solid fa-shield-check"></i> @ContentSvc.Get("hero.badge", "Gecertificeerd Installateur")</div>
         <h1 class="hero-title">
-            Uw <span class="hero-accent">CV Ketel</span><br />Specialist in Amsterdam
+            @ContentSvc.Get("hero.title.line1", "Uw") <span class="hero-accent">@ContentSvc.Get("hero.title.accent", "CV Ketel")</span><br />@ContentSvc.Get("hero.title.line2", "Specialist in Amsterdam")
         </h1>
         <p class="hero-subtitle">
-            Van installatie tot spoedreparatie — snel, betrouwbaar en professioneel.<br />
-            <strong>24/7 bereikbaar</strong> voor alle CV ketel problemen.
+            @ContentSvc.Get("hero.subtitle", "Van installatie tot spoedreparatie — snel, betrouwbaar en professioneel. 24/7 bereikbaar voor alle CV ketel problemen.")
         </p>
         <div class="hero-actions">
             <a href="#contact" class="btn-primary-custom">
@@ -28,11 +28,11 @@
             </a>
         </div>
         <div class="hero-trust">
-            <div class="trust-item"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><span>4.9/5 – 200+ reviews</span></div>
+            <div class="trust-item"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><span>@ContentSvc.Get("hero.trust.reviews", "4.9/5 – 200+ reviews")</span></div>
             <div class="trust-divider"></div>
-            <div class="trust-item"><i class="fa-solid fa-clock"></i><span>Binnen 2 uur ter plaatse</span></div>
+            <div class="trust-item"><i class="fa-solid fa-clock"></i><span>@ContentSvc.Get("hero.trust.speed", "Binnen 2 uur ter plaatse")</span></div>
             <div class="trust-divider"></div>
-            <div class="trust-item"><i class="fa-solid fa-award"></i><span>10+ jaar ervaring</span></div>
+            <div class="trust-item"><i class="fa-solid fa-award"></i><span>@ContentSvc.Get("hero.trust.experience", "10+ jaar ervaring")</span></div>
         </div>
     </div>
     <div class="hero-visual">
@@ -157,6 +157,25 @@
     </div>
 </section>
 
+<!-- ═══════════════════════ 3D KETEL ════════════════════ -->
+<section class="section ketel3d-section" id="ketel-3d">
+    <div class="section-container">
+        <div class="section-header animate-on-scroll">
+            <span class="section-tag">Interactief model</span>
+            <h2>CV Ketel <span class="accent">Van Binnen</span></h2>
+            <p>Ontdek alle onderdelen van een moderne HR-ketel. Draaien, inzoomen en klik op een onderdeel voor uitleg.</p>
+        </div>
+        <div class="ketel3d-wrapper animate-on-scroll">
+            <iframe src="/cvketel-3d.html"
+                    title="Interactief 3D CV Ketel Model"
+                    class="ketel3d-frame"
+                    loading="lazy"
+                    allowfullscreen></iframe>
+            <p class="ketel3d-hint"><i class="fa-solid fa-computer-mouse"></i> Slepen = draaien &nbsp;·&nbsp; Scrollen = zoom &nbsp;·&nbsp; Klikken = onderdeel info</p>
+        </div>
+    </div>
+</section>
+
 <!-- ═══════════════════════ OVER ONS ════════════════════ -->
 <section class="section over-ons-section" id="over-ons">
     <div class="section-container over-ons-grid">
@@ -181,28 +200,28 @@
             <span class="section-tag">Over Ons</span>
             <h2>Vakmanschap &amp; <span class="accent">Betrouwbaarheid</span></h2>
             <p class="ons-intro">
-                Bij SJ Techniek staat kwaliteit en klantgerichtheid centraal. Met meer dan 10 jaar ervaring in de CV-installatie branche, helpen wij particulieren en bedrijven in Amsterdam en omgeving.
+                @ContentSvc.Get("about.intro", "Bij SJ Techniek staat kwaliteit en klantgerichtheid centraal. Met meer dan 10 jaar ervaring in de CV-installatie branche, helpen wij particulieren en bedrijven in Amsterdam en omgeving.")
             </p>
             <div class="ons-features">
                 <div class="ons-feature">
                     <div class="ons-feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
                     <div>
-                        <h4>Volledig Verzekerd</h4>
-                        <p>Wij werken met alle benodigde certificaten en verzekeringen voor uw gemoedsrust.</p>
+                        <h4>@ContentSvc.Get("about.feature1.title", "Volledig Verzekerd")</h4>
+                        <p>@ContentSvc.Get("about.feature1.desc", "Wij werken met alle benodigde certificaten en verzekeringen voor uw gemoedsrust.")</p>
                     </div>
                 </div>
                 <div class="ons-feature">
                     <div class="ons-feature-icon"><i class="fa-solid fa-handshake"></i></div>
                     <div>
-                        <h4>Eerlijke Prijzen</h4>
-                        <p>Transparante offertes zonder verrassingen. Wat wij afspreken, dat doen wij.</p>
+                        <h4>@ContentSvc.Get("about.feature2.title", "Eerlijke Prijzen")</h4>
+                        <p>@ContentSvc.Get("about.feature2.desc", "Transparante offertes zonder verrassingen. Wat wij afspreken, dat doen wij.")</p>
                     </div>
                 </div>
                 <div class="ons-feature">
                     <div class="ons-feature-icon"><i class="fa-solid fa-medal"></i></div>
                     <div>
-                        <h4>Gecertificeerd</h4>
-                        <p>STEK gecertificeerd en erkend door alle grote CV ketel fabrikanten.</p>
+                        <h4>@ContentSvc.Get("about.feature3.title", "Gecertificeerd")</h4>
+                        <p>@ContentSvc.Get("about.feature3.desc", "STEK gecertificeerd en erkend door alle grote CV ketel fabrikanten.")</p>
                     </div>
                 </div>
             </div>
@@ -266,12 +285,12 @@
             <div class="prijs-card animate-on-scroll">
                 <div class="prijs-header">
                     <div class="prijs-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
-                    <h3>Basis Onderhoud</h3>
+                    <h3>@ContentSvc.Get("price.maintenance.name", "Basis Onderhoud")</h3>
                 </div>
                 <div class="prijs-amount">
                     <span class="prijs-from">vanaf</span>
-                    <span class="prijs-number">€79</span>
-                    <span class="prijs-period">per beurt</span>
+                    <span class="prijs-number">@ContentSvc.Get("price.maintenance.price", "€79")</span>
+                    <span class="prijs-period">@ContentSvc.Get("price.maintenance.period", "per beurt")</span>
                 </div>
                 <ul class="prijs-features">
                     <li><i class="fa-solid fa-check"></i> CV ketel inspectie</li>
@@ -287,12 +306,12 @@
                 <div class="prijs-popular-badge"><i class="fa-solid fa-crown"></i> Meest Gekozen</div>
                 <div class="prijs-header">
                     <div class="prijs-icon"><i class="fa-solid fa-shield-check"></i></div>
-                    <h3>Onderhoudscontract</h3>
+                    <h3>@ContentSvc.Get("price.contract.name", "Onderhoudscontract")</h3>
                 </div>
                 <div class="prijs-amount">
                     <span class="prijs-from">vanaf</span>
-                    <span class="prijs-number">€99</span>
-                    <span class="prijs-period">per jaar</span>
+                    <span class="prijs-number">@ContentSvc.Get("price.contract.price", "€99")</span>
+                    <span class="prijs-period">@ContentSvc.Get("price.contract.period", "per jaar")</span>
                 </div>
                 <ul class="prijs-features">
                     <li><i class="fa-solid fa-check"></i> Jaarlijks onderhoud</li>
@@ -307,12 +326,12 @@
             <div class="prijs-card animate-on-scroll">
                 <div class="prijs-header">
                     <div class="prijs-icon"><i class="fa-solid fa-fire-flame-curved"></i></div>
-                    <h3>Nieuwe Installatie</h3>
+                    <h3>@ContentSvc.Get("price.installation.name", "Nieuwe Installatie")</h3>
                 </div>
                 <div class="prijs-amount">
                     <span class="prijs-from">vanaf</span>
-                    <span class="prijs-number">€950</span>
-                    <span class="prijs-period">all-in</span>
+                    <span class="prijs-number">@ContentSvc.Get("price.installation.price", "€950")</span>
+                    <span class="prijs-period">@ContentSvc.Get("price.installation.period", "all-in")</span>
                 </div>
                 <ul class="prijs-features">
                     <li><i class="fa-solid fa-check"></i> Demontage oude ketel</li>
@@ -330,23 +349,23 @@
             <div class="tarief-grid">
                 <div class="tarief-item">
                     <span class="tarief-naam"><i class="fa-solid fa-bolt"></i> Spoedreparatie (buiten kantoortijden)</span>
-                    <span class="tarief-prijs">vanaf €149</span>
+                    <span class="tarief-prijs">@ContentSvc.Get("price.emergency", "vanaf €149")</span>
                 </div>
                 <div class="tarief-item">
                     <span class="tarief-naam"><i class="fa-solid fa-fire"></i> Radiator plaatsing (p/st)</span>
-                    <span class="tarief-prijs">vanaf €89</span>
+                    <span class="tarief-prijs">@ContentSvc.Get("price.radiator", "vanaf €89")</span>
                 </div>
                 <div class="tarief-item">
                     <span class="tarief-naam"><i class="fa-solid fa-temperature-half"></i> Thermostaat installatie</span>
-                    <span class="tarief-prijs">vanaf €69</span>
+                    <span class="tarief-prijs">@ContentSvc.Get("price.thermostat", "vanaf €69")</span>
                 </div>
                 <div class="tarief-item">
                     <span class="tarief-naam"><i class="fa-solid fa-droplet"></i> Ontluchten radiatoren (volledig huis)</span>
-                    <span class="tarief-prijs">vanaf €59</span>
+                    <span class="tarief-prijs">@ContentSvc.Get("price.bleed", "vanaf €59")</span>
                 </div>
                 <div class="tarief-item">
                     <span class="tarief-naam"><i class="fa-solid fa-magnifying-glass"></i> Diagnose &amp; inspectie</span>
-                    <span class="tarief-prijs">€45 (gratis bij reparatie)</span>
+                    <span class="tarief-prijs">@ContentSvc.Get("price.diagnosis", "€45 (gratis bij reparatie)")</span>
                 </div>
                 <div class="tarief-item">
                     <span class="tarief-naam"><i class="fa-solid fa-leaf"></i> Hybride warmtepomp installatie</span>
@@ -368,26 +387,26 @@
         <div class="reviews-grid">
             <div class="review-card animate-on-scroll">
                 <div class="review-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
-                <p class="review-text">"SJ Techniek was binnen een uur bij mij thuis na een spoedmelding. Vriendelijk, vakkundig en de prijs was precies zoals afgesproken. Absolute aanrader!"</p>
+                <p class="review-text">"@ContentSvc.Get("review1.text", "SJ Techniek was binnen een uur bij mij thuis na een spoedmelding. Vriendelijk, vakkundig en de prijs was precies zoals afgesproken. Absolute aanrader!")"</p>
                 <div class="review-author">
-                    <div class="review-avatar">MV</div>
-                    <div><strong>Mohamed V.</strong><span>Amsterdam</span></div>
+                    <div class="review-avatar">@(ContentSvc.Get("review1.author", "Mohamed V.").Split(' ').Length >= 2 ? $"{ContentSvc.Get("review1.author", "Mohamed V.").Split(' ')[0][0]}{ContentSvc.Get("review1.author", "Mohamed V.").Split(' ')[1][0]}" : "?")</div>
+                    <div><strong>@ContentSvc.Get("review1.author", "Mohamed V.")</strong><span>@ContentSvc.Get("review1.location", "Amsterdam")</span></div>
                 </div>
             </div>
             <div class="review-card animate-on-scroll">
                 <div class="review-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
-                <p class="review-text">"Al jaren bij SJ Techniek voor mijn jaarlijks onderhoud. Altijd stipt op tijd, netjes en doen ook nog even dat kleine extra'tje. Geweldig bedrijf!"</p>
+                <p class="review-text">"@ContentSvc.Get("review2.text", "Al jaren bij SJ Techniek voor mijn jaarlijks onderhoud. Altijd stipt op tijd, netjes en doen ook nog even dat kleine extra'tje. Geweldig bedrijf!")"</p>
                 <div class="review-author">
-                    <div class="review-avatar">AJ</div>
-                    <div><strong>Anne J.</strong><span>Amsterdam-Noord</span></div>
+                    <div class="review-avatar">@(ContentSvc.Get("review2.author", "Anne J.").Split(' ').Length >= 2 ? $"{ContentSvc.Get("review2.author", "Anne J.").Split(' ')[0][0]}{ContentSvc.Get("review2.author", "Anne J.").Split(' ')[1][0]}" : "?")</div>
+                    <div><strong>@ContentSvc.Get("review2.author", "Anne J.")</strong><span>@ContentSvc.Get("review2.location", "Amsterdam-Noord")</span></div>
                 </div>
             </div>
             <div class="review-card animate-on-scroll">
                 <div class="review-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
-                <p class="review-text">"Nieuwe CV ketel geplaatst inclusief vloerverwarming in de badkamer. Prachtig werk, alles netjes weggewerkt. De offerteprijs was de eindprijs. Top!"</p>
+                <p class="review-text">"@ContentSvc.Get("review3.text", "Nieuwe CV ketel geplaatst inclusief vloerverwarming in de badkamer. Prachtig werk, alles netjes weggewerkt. De offerteprijs was de eindprijs. Top!")"</p>
                 <div class="review-author">
-                    <div class="review-avatar">PB</div>
-                    <div><strong>Peter B.</strong><span>Amstelveen</span></div>
+                    <div class="review-avatar">@(ContentSvc.Get("review3.author", "Peter B.").Split(' ').Length >= 2 ? $"{ContentSvc.Get("review3.author", "Peter B.").Split(' ')[0][0]}{ContentSvc.Get("review3.author", "Peter B.").Split(' ')[1][0]}" : "?")</div>
+                    <div><strong>@ContentSvc.Get("review3.author", "Peter B.")</strong><span>@ContentSvc.Get("review3.location", "Amstelveen")</span></div>
                 </div>
             </div>
         </div>
@@ -459,15 +478,15 @@
                 <div class="contact-info-bar">
                     <div class="contact-info-item">
                         <i class="fa-solid fa-phone"></i>
-                        <div><strong>+31 6 12 34 56 78</strong><span>Bereikbaar Ma-Za 08:00-20:00</span></div>
+                        <div><strong>@ContentSvc.Get("contact.phone", "+31 6 12 34 56 78")</strong><span>@ContentSvc.Get("contact.phone.hours", "Bereikbaar Ma-Za 08:00-20:00")</span></div>
                     </div>
                     <div class="contact-info-item">
                         <i class="fa-solid fa-envelope"></i>
-                        <div><strong>info@sjtechniek.nl</strong><span>Reactie binnen 1 uur</span></div>
+                        <div><strong>@ContentSvc.Get("contact.email", "info@sjtechniek.nl")</strong><span>Reactie binnen 1 uur</span></div>
                     </div>
                     <div class="contact-info-item">
                         <i class="fa-solid fa-location-dot"></i>
-                        <div><strong>Amsterdam &amp; omgeving</strong><span>Gratis reiskosten in Amsterdam</span></div>
+                        <div><strong>@ContentSvc.Get("contact.address", "Amsterdam &amp; omgeving")</strong><span>@ContentSvc.Get("contact.address.note", "Gratis reiskosten in Amsterdam")</span></div>
                     </div>
                 </div>
 

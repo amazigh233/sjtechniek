@@ -1,0 +1,39 @@
+@inherits LayoutComponentBase
+@inject NavigationManager Nav
+
+<div class="admin-layout">
+    <nav class="admin-nav">
+        <div class="admin-nav-brand">
+            <i class="fa-solid fa-fire-flame-curved"></i>
+            <span>SJ Techniek <strong>Admin</strong></span>
+        </div>
+        <div class="admin-nav-links">
+            <a href="/admin" class="@(IsActive("/admin", exact: true) ? "active" : "")">
+                <i class="fa-solid fa-chart-line"></i> Dashboard
+            </a>
+            <a href="/admin/content" class="@(IsActive("/admin/content") ? "active" : "")">
+                <i class="fa-solid fa-pen-to-square"></i> Inhoud Bewerken
+            </a>
+            <a href="/" target="_blank">
+                <i class="fa-solid fa-eye"></i> Website Bekijken
+            </a>
+        </div>
+        <form action="/admin/logout" method="post" style="display:inline">
+            <button type="submit" class="admin-logout-btn">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Uitloggen
+            </button>
+        </form>
+    </nav>
+    <main class="admin-main">
+        @Body
+    </main>
+</div>
+
+@code {
+    private bool IsActive(string path, bool exact = false)
+    {
+        var uri = Nav.ToBaseRelativePath(Nav.Uri);
+        if (exact) return uri == path.TrimStart('/') || uri == "";
+        return uri.StartsWith(path.TrimStart('/'), StringComparison.OrdinalIgnoreCase);
+    }
+}

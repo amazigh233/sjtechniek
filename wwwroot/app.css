@@ -608,6 +608,34 @@ body {
 }
 .dienst-list .fa-check { color: var(--orange); font-size: 0.7rem; }
 
+/* ═══ 3D KETEL ═══ */
+.ketel3d-section { background: #0f1117; }
+.ketel3d-section .section-tag { color: #7eb8f7; background: rgba(126,184,247,0.12); border-color: rgba(126,184,247,0.25); }
+.ketel3d-section h2 { color: #e0e4ef; }
+.ketel3d-section p { color: #9ca3af; }
+.ketel3d-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+.ketel3d-frame {
+    width: 100%;
+    height: 600px;
+    border: 1px solid #2a2d3a;
+    border-radius: 16px;
+    background: #0f1117;
+    display: block;
+}
+.ketel3d-hint {
+    font-size: 0.82rem;
+    color: #4b5563;
+    margin: 0;
+}
+@media (max-width: 768px) {
+    .ketel3d-frame { height: 420px; }
+}
+
 /* ═══ OVER ONS ═══ */
 .over-ons-section { background: white; }
 .over-ons-grid {
