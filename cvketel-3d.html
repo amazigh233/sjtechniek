@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CV Ketel 3D – Interactief Model</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0f1117; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+    #canvas-container { width: 100vw; height: 100vh; }
+    #ui-panel {
+      position: fixed; top: 20px; left: 20px;
+      background: rgba(15,17,23,0.92);
+      border: 1px solid #2a2d3a;
+      border-radius: 12px; padding: 18px 20px;
+      color: #e0e4ef; max-width: 260px; z-index: 10;
+      backdrop-filter: blur(8px);
+    }
+    #ui-panel h2 { font-size: 1.05rem; color: #7eb8f7; margin-bottom: 4px; }
+    #ui-panel .model-name { font-size: 0.78rem; color: #6b7280; margin-bottom: 14px; }
+    #part-info {
+      background: rgba(126,184,247,0.08);
+      border: 1px solid rgba(126,184,247,0.2);
+      border-radius: 8px; padding: 12px; min-height: 80px;
+      transition: all 0.3s;
+    }
+    #part-info .part-title { font-size: 1rem; font-weight: 600; color: #7eb8f7; margin-bottom: 6px; }
+    #part-info .part-desc  { font-size: 0.8rem; color: #9ca3af; line-height: 1.5; }
+    #part-info .placeholder { font-size: 0.82rem; color: #4b5563; }
+    #legend {
+      margin-top: 14px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 5px;
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.72rem; color: #9ca3af; cursor: pointer;
+      padding: 3px 5px; border-radius: 5px; transition: background 0.2s;
+    }
+    .legend-item:hover { background: rgba(126,184,247,0.1); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    #hint {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: rgba(15,17,23,0.85); color: #6b7280;
+      font-size: 0.78rem; padding: 8px 18px; border-radius: 20px;
+      border: 1px solid #2a2d3a; backdrop-filter: blur(8px);
+    }
+    #loading {
+      position: fixed; inset: 0; background: #0f1117;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #7eb8f7; font-size: 1.1rem; z-index: 100;
+    }
+    .spinner {
+      width: 40px; height: 40px; border: 3px solid #2a2d3a;
+      border-top-color: #7eb8f7; border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin-bottom: 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  3D Model laden…
+</div>
+
+<div id="canvas-container"></div>
+
+<div id="ui-panel">
+  <h2>🔥 CV Ketel 3D</h2>
+  <div class="model-name">Remeha Calenta Ace 28c (referentiemodel)</div>
+  <div id="part-info">
+    <div class="placeholder">Klik of hover op een onderdeel om details te zien.</div>
+  </div>
+  <div id="legend"></div>
+</div>
+
+<div id="hint">🖱️ Draaien: sleep &nbsp;|&nbsp; Zoom: scroll &nbsp;|&nbsp; Pannen: rechter muisknop</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ── Scène setup ──────────────────────────────────────────────
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0f1117);
+scene.fog = new THREE.FogExp2(0x0f1117, 0.045);
+
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200);
+camera.position.set(3.5, 2.5, 5);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.minDistance = 2;
+controls.maxDistance = 14;
+controls.target.set(0, 1.2, 0);
+
+// ── Verlichting ───────────────────────────────────────────────
+const ambient = new THREE.AmbientLight(0xffffff, 0.45);
+scene.add(ambient);
+
+const keyLight = new THREE.DirectionalLight(0xffeedd, 2.2);
+keyLight.position.set(5, 8, 4);
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.set(2048, 2048);
+keyLight.shadow.camera.near = 0.5;
+keyLight.shadow.camera.far = 30;
+keyLight.shadow.camera.left = keyLight.shadow.camera.bottom = -5;
+keyLight.shadow.camera.right = keyLight.shadow.camera.top = 5;
+scene.add(keyLight);
+
+const fillLight = new THREE.DirectionalLight(0xaaccff, 0.6);
+fillLight.position.set(-4, 3, -3);
+scene.add(fillLight);
+
+const backLight = new THREE.PointLight(0xff6030, 0.8, 8);
+backLight.position.set(0, 0.5, -1.8);
+scene.add(backLight);
+
+// ── Vloer ─────────────────────────────────────────────────────
+const floorGeo = new THREE.PlaneGeometry(20, 20);
+const floorMat = new THREE.MeshStandardMaterial({ color: 0x1a1d27, roughness: 0.9 });
+const floor = new THREE.Mesh(floorGeo, floorMat);
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
+
+// Grid
+const grid = new THREE.GridHelper(20, 30, 0x2a2d3a, 0x1f2233);
+scene.add(grid);
+
+// ── Onderdelen definities ─────────────────────────────────────
+const PARTS = {
+  behuizing:       { label: 'Behuizing',           color: 0x3a8fe8, desc: 'De buitenmantel van de ketel, vervaardigd uit gepoedercoat staal. Beschermt de interne componenten en isoleert warmte.' },
+  frontpaneel:     { label: 'Bedieningspaneel',     color: 0x4fc3f7, desc: 'Het digitale display met thermostaatbediening. Hier stel je de gewenste temperatuur, tijdschema en servicemodus in.' },
+  warmtewisselaar: { label: 'Warmtewisselaar',      color: 0xe8923a, desc: 'Roestvast stalen (AISI 316) condenserende warmtewisselaar. Onttrekt maximaal warmte uit rookgassen, rendement tot 109%.' },
+  brander:         { label: 'Brander',              color: 0xff5722, desc: 'Modulerende premixbrander. Regelt het vermogen van ca. 8 kW tot 28 kW op basis van warmtevraag.' },
+  pomp:            { label: 'CV-pomp',              color: 0x78909c, desc: 'Hoge-efficiëntie EC-pomp (energieklasse A). Circuleert het verwarmingswater door het systeem.' },
+  expansievat:     { label: 'Expansievat',          color: 0x8d6e63, desc: 'Membraanexpansievat van 8 liter. Vangt de volumetoename van het water bij verwarming op (voordruk 0,75 bar).' },
+  gasventiel:      { label: 'Gasventiel (combi)',   color: 0xffca28, desc: 'Geïntegreerd veiligheidsafsluitventiel + drukregelaar. Stuurt de gastoevoer naar de brander. CE-gecertificeerd.' },
+  drukmanometer:   { label: 'Drukmeter',            color: 0xaed581, desc: 'Meet de systeemdruk van het cv-circuit (normaal 1,5–2 bar). Zichtbaar vanuit het frontpaneel.' },
+  luchttoevoer:    { label: 'Luchttoevoer',         color: 0x80cbc4, desc: 'Concentrische lucht/rookgasleiding (Ø80/125 mm). Voert verbrandingslucht aan en rookgassen af.' },
+  rookgasafvoer:   { label: 'Rookgasafvoer',        color: 0xb0bec5, desc: 'Afvoer van verbrandingsgassen (max. 60°C bij HR-ketel). Condenswater wordt afgevoerd via de sifon.' },
+  waterinlaat:     { label: 'Waterinlaat (retour)',  color: 0x42a5f5, desc: 'Retourleiding: koud water keert terug uit de radiatoren naar de ketel voor herverwarming.' },
+  wateruitlaat:    { label: 'Wateruitlaat (aanvoer)', color: 0xef5350, desc: 'Aanvoerleiding: heet water (max. 90°C) wordt naar het verwarmingssysteem gepompt.' },
+  condensaatafvoer: { label: 'Condensaatafvoer',    color: 0xce93d8, desc: 'HR-ketels produceren condenswater (pH ~3). De sifon neutraliseert het condensaat voor het rioolaanzuiging.' },
+};
+
+const meshMap   = {}; // partKey → [meshes]
+const partIndex = {}; // mesh.uuid → partKey
+let highlighted = null;
+
+// ── Materiaal helper ──────────────────────────────────────────
+function mat(hex, rough = 0.4, metal = 0.2) {
+  return new THREE.MeshStandardMaterial({ color: hex, roughness: rough, metalness: metal });
+}
+
+function addPart(key, meshOrGroup) {
+  if (!meshMap[key]) meshMap[key] = [];
+  const items = meshOrGroup.isGroup
+    ? meshOrGroup.children
+    : [meshOrGroup];
+  items.forEach(m => {
+    if (m.isMesh) {
+      m.castShadow = true;
+      m.receiveShadow = true;
+      partIndex[m.uuid] = key;
+      meshMap[key].push(m);
+    }
+  });
+  scene.add(meshOrGroup);
+}
+
+// ── Geometrie helpers ─────────────────────────────────────────
+function box(w, h, d, x, y, z, hex, r = 0.4, m = 0.2) {
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(hex, r, m));
+  mesh.position.set(x, y, z);
+  return mesh;
+}
+function cyl(rt, rb, h, x, y, z, hex, r = 0.4, m = 0.3, segs = 24) {
+  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, segs), mat(hex, r, m));
+  mesh.position.set(x, y, z);
+  return mesh;
+}
+function sph(radius, x, y, z, hex, r = 0.5) {
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 20, 20), mat(hex, r, 0.1));
+  mesh.position.set(x, y, z);
+  return mesh;
+}
+
+// ── CV Ketel bouwen ────────────────────────────────────────────
+// Behuizing hoofd (wit/lichtgrijs)
+const casing = box(1.5, 2.8, 0.7, 0, 1.4, 0, 0xd6dce8, 0.6, 0.05);
+addPart('behuizing', casing);
+
+// Behuizing detail – subtiele rand
+const casingEdge = box(1.54, 2.84, 0.05, 0, 1.4, 0.37, 0xc0c8d8, 0.7, 0.05);
+addPart('behuizing', casingEdge);
+
+// Frontpaneel (display-strook bovenaan)
+const panel = box(1.0, 0.32, 0.08, 0, 2.62, 0.37, 0x1e2537, 0.2, 0.1);
+addPart('frontpaneel', panel);
+
+// Display glas
+const display = box(0.65, 0.18, 0.04, 0, 2.65, 0.42, 0x4fc3f7, 0.1, 0.0);
+addPart('frontpaneel', display);
+
+// Knoppen
+[-0.35, 0.35].forEach(x => {
+  const btn = cyl(0.045, 0.045, 0.06, x, 2.65, 0.42, 0x546e7a, 0.3, 0.5);
+  addPart('frontpaneel', btn);
+});
+
+// Warmtewisselaar (achteraan, oranje)
+const hx = box(1.1, 1.1, 0.25, 0, 1.6, -0.18, 0xe8923a, 0.5, 0.4);
+addPart('warmtewisselaar', hx);
+
+// Warmtewisselaar ribben
+for (let i = -4; i <= 4; i++) {
+  const rib = box(0.04, 1.0, 0.28, i * 0.12, 1.6, -0.18, 0xd4791a, 0.3, 0.5);
+  addPart('warmtewisselaar', rib);
+}
+
+// Brander
+const burner = box(0.9, 0.18, 0.5, 0, 0.75, -0.05, 0xff5722, 0.3, 0.4);
+addPart('brander', burner);
+
+// Branderbuis
+for (let i = -3; i <= 3; i++) {
+  const tube = cyl(0.025, 0.025, 0.55, i * 0.13, 0.75, -0.05, 0xdd4411, 0.2, 0.6, 12);
+  tube.rotation.z = Math.PI / 2;
+  addPart('brander', tube);
+}
+
+// CV-pomp
+const pump = cyl(0.18, 0.18, 0.38, 0.6, 1.0, 0.4, 0x78909c, 0.3, 0.6);
+addPart('pomp', pump);
+const pumpFront = cyl(0.16, 0.16, 0.05, 0.6, 1.0, 0.6, 0x607d8b, 0.2, 0.7);
+addPart('pomp', pumpFront);
+
+// Pompmotor-ribben
+for (let a = 0; a < 6; a++) {
+  const angle = (a / 6) * Math.PI * 2;
+  const rib = box(0.04, 0.35, 0.03, 0.6 + Math.cos(angle) * 0.22, 1.0, 0.4 + Math.sin(angle) * 0.22, 0x546e7a, 0.3, 0.5);
+  addPart('pomp', rib);
+}
+
+// Expansievat
+const expVat = sph(0.28, -0.62, 0.85, 0.1, 0x8d6e63, 0.4);
+addPart('expansievat', expVat);
+const expBand = cyl(0.285, 0.285, 0.06, -0.62, 0.85, 0.1, 0x6d4c41, 0.3, 0.3);
+addPart('expansievat', expBand);
+
+// Gasventiel
+const gasValve = box(0.35, 0.22, 0.22, -0.5, 0.35, 0.15, 0xffca28, 0.35, 0.3);
+addPart('gasventiel', gasValve);
+const gasPipe = cyl(0.04, 0.04, 0.35, -0.5, 0.18, 0.15, 0xffa000, 0.3, 0.5);
+addPart('gasventiel', gasPipe);
+
+// Drukmeter (manometer)
+const gauge = cyl(0.1, 0.1, 0.06, 0.5, 2.3, 0.4, 0xaed581, 0.2, 0.1);
+addPart('drukmanometer', gauge);
+const gaugeGlass = cyl(0.075, 0.075, 0.02, 0.5, 2.3, 0.44, 0xdce775, 0.05, 0.0);
+addPart('drukmanometer', gaugeGlass);
+
+// Luchttoevoer (bovenpijp, concentrisch)
+const airPipe = cyl(0.12, 0.12, 0.9, 0, 3.25, -0.1, 0x80cbc4, 0.4, 0.5);
+addPart('luchttoevoer', airPipe);
+const airPipeInner = cyl(0.07, 0.07, 0.95, 0, 3.25, -0.1, 0x4db6ac, 0.3, 0.6);
+addPart('luchttoevoer', airPipeInner);
+
+// Rookgasafvoer (kap boven)
+const flue = cyl(0.13, 0.13, 0.2, 0, 3.75, -0.1, 0xb0bec5, 0.5, 0.4);
+addPart('rookgasafvoer', flue);
+const flueCap = cyl(0.17, 0.13, 0.06, 0, 3.86, -0.1, 0x90a4ae, 0.4, 0.3);
+addPart('rookgasafvoer', flueCap);
+
+// Water retour (links onder)
+const retPipe = cyl(0.055, 0.055, 0.55, -0.45, 0.28, 0.22, 0x42a5f5, 0.3, 0.6);
+addPart('waterinlaat', retPipe);
+const retElbow = cyl(0.055, 0.055, 0.2, -0.45, 0.05, 0.22, 0x1e88e5, 0.3, 0.6);
+retElbow.rotation.x = Math.PI / 2;
+addPart('waterinlaat', retElbow);
+
+// Water aanvoer (rechts onder)
+const supPipe = cyl(0.055, 0.055, 0.55, 0.45, 0.28, 0.22, 0xef5350, 0.3, 0.6);
+addPart('wateruitlaat', supPipe);
+const supElbow = cyl(0.055, 0.055, 0.2, 0.45, 0.05, 0.22, 0xe53935, 0.3, 0.6);
+supElbow.rotation.x = Math.PI / 2;
+addPart('wateruitlaat', supElbow);
+
+// Condensaatafvoer (midden onder)
+const condPipe = cyl(0.035, 0.035, 0.3, 0.1, 0.08, 0.2, 0xce93d8, 0.3, 0.2);
+addPart('condensaatafvoer', condPipe);
+const condSifon = box(0.12, 0.1, 0.1, 0.1, -0.09, 0.2, 0xba68c8, 0.4, 0.1);
+addPart('condensaatafvoer', condSifon);
+
+// ── Wandbeugel ────────────────────────────────────────────────
+const bracket = box(1.7, 0.06, 0.12, 0, 2.88, -0.06, 0x9e9e9e, 0.5, 0.6);
+scene.add(bracket);
+const bracketL = box(0.06, 0.35, 0.12, -0.82, 2.71, -0.06, 0x9e9e9e, 0.5, 0.6);
+scene.add(bracketL);
+const bracketR = box(0.06, 0.35, 0.12,  0.82, 2.71, -0.06, 0x9e9e9e, 0.5, 0.6);
+scene.add(bracketR);
+
+// Wandplaat
+const wall = box(2.2, 4.5, 0.05, 0, 1.5, -0.42, 0x1e2130, 0.9, 0.0);
+scene.add(wall);
+
+// ── Legende opbouwen ──────────────────────────────────────────
+const legend = document.getElementById('legend');
+Object.entries(PARTS).forEach(([key, info]) => {
+  const item = document.createElement('div');
+  item.className = 'legend-item';
+  item.dataset.key = key;
+  item.innerHTML = `<div class="legend-dot" style="background:#${info.color.toString(16).padStart(6,'0')}"></div><span>${info.label}</span>`;
+  item.addEventListener('click', () => highlightPart(key));
+  legend.appendChild(item);
+});
+
+// ── Highlight logica ──────────────────────────────────────────
+const originalColors = {};
+Object.keys(meshMap).forEach(key => {
+  meshMap[key].forEach(m => {
+    originalColors[m.uuid] = m.material.color.getHex();
+  });
+});
+
+function highlightPart(key) {
+  // Reset
+  if (highlighted) {
+    meshMap[highlighted]?.forEach(m => {
+      m.material.color.setHex(originalColors[m.uuid]);
+      m.material.emissive.setHex(0x000000);
+      m.material.emissiveIntensity = 0;
+    });
+  }
+
+  // Highlight nieuw onderdeel
+  if (key && meshMap[key]) {
+    meshMap[key].forEach(m => {
+      m.material.emissive.setHex(PARTS[key].color);
+      m.material.emissiveIntensity = 0.55;
+    });
+    highlighted = key;
+
+    // UI bijwerken
+    const info = PARTS[key];
+    document.getElementById('part-info').innerHTML = `
+      <div class="part-title">${info.label}</div>
+      <div class="part-desc">${info.desc}</div>
+    `;
+
+    // Legenda item actief
+    document.querySelectorAll('.legend-item').forEach(el => {
+      el.style.background = el.dataset.key === key ? 'rgba(126,184,247,0.18)' : '';
+    });
+  } else {
+    highlighted = null;
+    document.getElementById('part-info').innerHTML = '<div class="placeholder">Klik of hover op een onderdeel om details te zien.</div>';
+    document.querySelectorAll('.legend-item').forEach(el => el.style.background = '');
+  }
+}
+
+// ── Raycasting ────────────────────────────────────────────────
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let hovered = null;
+
+renderer.domElement.addEventListener('mousemove', e => {
+  mouse.x =  (e.clientX / window.innerWidth)  * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+});
+
+renderer.domElement.addEventListener('click', () => {
+  if (hovered) {
+    if (hovered === highlighted) {
+      highlightPart(null);
+    } else {
+      highlightPart(hovered);
+    }
+  } else {
+    highlightPart(null);
+  }
+});
+
+// ── Animatie ──────────────────────────────────────────────────
+const allMeshes = Object.values(meshMap).flat();
+let hoveredPrevious = null;
+
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+
+  // Raycast
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(allMeshes, false);
+
+  if (hits.length > 0) {
+    const key = partIndex[hits[0].object.uuid];
+    if (key !== highlighted) {
+      hovered = key;
+      document.body.style.cursor = 'pointer';
+    } else {
+      hovered = key;
+      document.body.style.cursor = 'pointer';
+    }
+  } else {
+    hovered = null;
+    document.body.style.cursor = 'default';
+  }
+
+  // Zachte puls op geselecteerd onderdeel
+  if (highlighted && meshMap[highlighted]) {
+    const pulse = 0.45 + Math.sin(Date.now() * 0.003) * 0.12;
+    meshMap[highlighted].forEach(m => {
+      m.material.emissiveIntensity = pulse;
+    });
+  }
+
+  renderer.render(scene, camera);
+}
+
+// Loading wegklikken
+setTimeout(() => {
+  document.getElementById('loading').style.display = 'none';
+  animate();
+}, 600);
+
+// Window resize
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
